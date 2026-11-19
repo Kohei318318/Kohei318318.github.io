@@ -5,7 +5,11 @@ GitHub Pages で公開する静的サイトです。YouTube の直近5本の動�
 ## ファイル構成
 
 ```
-index.html                    サイト本体（写真・イラストは埋め込み済み）
+index.html                    サイト本体（文章・構成）
+assets/style.css              デザイン（色・レイアウト・アニメーション）
+assets/main.js                動き（キャラのタップ演出、電車の路線図、ステッカー、動画スライダーなど）
+assets/kopeiking.webp         キャラクターイラスト（背景透過）
+assets/kopeiking.jpg          SNS共有用の画像（OGP）
 videos.json                   直近5本の動画リスト（自動で更新されます）
 scripts/fetch_videos.py       YouTube から最新動画を取得するスクリプト
 .github/workflows/deploy.yml  動画の取得とサイト公開を自動で行う設定
@@ -33,4 +37,6 @@ scripts/fetch_videos.py       YouTube から最新動画を取得するスクリ
 
 ## カスタマイズ
 
-文言や色は `index.html` で直接編集できます（色は `:root` の変数）。
+- 文言・実績の追加は `index.html` を編集します（実績は `<article class="ach ...">` を1ブロックコピーして追加）
+- 色は `assets/style.css` 冒頭の `:root` の変数で変更できます（ライト／ダーク両方あります）
+- アニメーションは「視差効果を減らす」設定のブラウザでは自動的に控えめになります
