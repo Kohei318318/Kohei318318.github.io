@@ -98,6 +98,8 @@ button{font:inherit;color:inherit}
 .btn:active{box-shadow:1px 1px 0 var(--fg)}
 .btn-yt{background:var(--red);color:#fff}
 .btn-gh{background:var(--fg);color:var(--bg)}
+.btn .gh-face{width:28px;height:auto;margin:-6px 0;flex:none;transition:transform .4s var(--spring)}
+.btn:hover .gh-face{transform:rotate(-12deg) scale(1.15)}
 .magnet{transition:transform .35s var(--spring),box-shadow .2s,background .2s,color .2s}
 
 /* ---------- hero ---------- */
@@ -414,6 +416,7 @@ section[id]{scroll-margin-top:70px}
 .lk:hover::before{transform:none}
 .lk:hover{color:var(--on)}
 .lk .ic{width:40px;height:40px;flex:none;fill:currentColor;transition:transform .5s var(--spring)}
+.lk .ic-face{width:46px;height:auto}
 .lk:hover .ic{transform:rotate(-14deg) scale(1.15)}
 .lk .t{flex:1}
 .lk .t strong{display:block;font-family:var(--display);font-weight:400;font-size:26px;line-height:1.3}
