@@ -867,7 +867,7 @@ html.intro-play .hero,html.intro-play .hero *{animation-play-state:paused !impor
 @keyframes seatIn{to{opacity:1}}
 .credits{width:100%;max-width:520px;height:230px;margin-top:22px;overflow:hidden;-webkit-mask-image:linear-gradient(transparent,#000 16%,#000 84%,transparent);mask-image:linear-gradient(transparent,#000 16%,#000 84%,transparent)}
 .js .credits-in{transform:translateY(230px)}
-.ftr.ending-on .credits-in{animation:roll 17s 2.2s linear forwards}
+.ftr.ending-on .credits-in{animation:roll 9s 2.2s linear forwards}
 @keyframes roll{from{transform:translateY(230px)}to{transform:translateY(calc(-100% + 140px))}}
 .credits dl{margin:0;display:grid;gap:18px}
 .credits dl div{display:grid;gap:2px}
