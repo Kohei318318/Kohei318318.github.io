@@ -99,7 +99,7 @@ button{font:inherit;color:inherit}
 .btn-yt{background:var(--red);color:#fff}
 .btn-gh{background:var(--fg);color:var(--bg)}
 .gh-face,.ic-face{display:inline-block;flex:none;background:currentColor;-webkit-mask:url(kopeiking-mono.png) center/contain no-repeat;mask:url(kopeiking-mono.png) center/contain no-repeat}
-.btn .gh-face{width:24px;height:25px;transition:transform .4s var(--spring)}
+.btn .gh-face{width:22px;height:22px;transition:transform .4s var(--spring)}
 .btn:hover .gh-face{transform:rotate(-12deg) scale(1.15)}
 .magnet{transition:transform .35s var(--spring),box-shadow .2s,background .2s,color .2s}
 
@@ -417,7 +417,7 @@ section[id]{scroll-margin-top:70px}
 .lk:hover::before{transform:none}
 .lk:hover{color:var(--on)}
 .lk .ic{width:40px;height:40px;flex:none;fill:currentColor;transition:transform .5s var(--spring)}
-.lk .ic-face{width:42px;height:44px}
+.lk .ic-face{width:40px;height:40px}
 .lk:hover .ic{transform:rotate(-14deg) scale(1.15)}
 .lk .t{flex:1}
 .lk .t strong{display:block;font-family:var(--display);font-weight:400;font-size:26px;line-height:1.3}
