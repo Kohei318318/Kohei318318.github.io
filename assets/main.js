@@ -110,27 +110,6 @@
   requestAnimationFrame(collectMq);
   let speed = 1;
 
-  const route = $('#route');
-  const routeTrain = $('#routeTrain');
-  const stations = $$('.st', route);
-  const dots = $$('.st-dot', route);
-  const updateRoute = () => {
-    const r = route.getBoundingClientRect();
-    const vh = innerHeight;
-    const p = clamp((vh * .78 - r.top) / (vh * .33 + r.height), 0, 1);
-    route.style.setProperty('--p', p.toFixed(4));
-    const a = dots[0].getBoundingClientRect();
-    const b = dots[dots.length - 1].getBoundingClientRect();
-    const ax = a.left + a.width / 2 - r.left, ay = a.top + a.height / 2 - r.top;
-    const bx = b.left + b.width / 2 - r.left, by = b.top + b.height / 2 - r.top;
-    const vertical = Math.abs(by - ay) > Math.abs(bx - ax);
-    // keep the train just above the line on desktop, on the line on phones
-    routeTrain.style.setProperty('--tx', (ax + (bx - ax) * p) + 'px');
-    routeTrain.style.setProperty('--ty', (ay + (by - ay) * p - (vertical ? 0 : 26)) + 'px');
-    const n = stations.length - 1;
-    stations.forEach((s, i) => s.classList.toggle('on', p >= i / n - .02));
-  };
-
   const onScroll = () => {
     const y = scrollY;
     const h = document.documentElement;
@@ -142,10 +121,8 @@
     if (!nav.classList.contains('open')) hdr.classList.toggle('hide', y > lastY && y > 300);
     speed = Math.min(5, 1 + Math.abs(y - lastY) / 12);
     lastY = y;
-    updateRoute();
   };
   addEventListener('scroll', onScroll, { passive: true });
-  addEventListener('resize', updateRoute);
   onScroll();
 
   // marquee eases back to normal speed after a scroll burst
@@ -294,6 +271,7 @@
   };
   let taps = 0;
   char.addEventListener('click', e => {
+    if (longFired) { longFired = false; return; }
     char.style.transformOrigin = '';
     const [action, fn] = ACTIONS[taps % ACTIONS.length];
     taps++;
@@ -301,7 +279,7 @@
     fn();
     if (taps === ACTIONS.length) {
       setTimeout(() => {
-        say('🎉 全部見てくれてありがとう！');
+        say('🎉 全部見てくれてありがとう！長押しも試してみて…？');
         for (let k = 0; k < 6; k++) setTimeout(() => burst(rand(0, innerWidth), rand(0, innerHeight * .6), 24, k % 2 === 0), k * 180);
       }, 1200);
     } else if (taps % 3 === 0) {
@@ -355,10 +333,10 @@
   const gBtn = $('#guideBtn');
   const TIPS = {
     about: ['ぼくがこうぺいキング！よろしくね', 'ステッカーはドラッグで動かせるよ', 'チケットの裏にだれか隠れてる…？'],
-    journexia: ['JOURNEXIAは、ぼくが代表をしている観光専門のAIコンサルティングだよ', 'EBPMは「証拠に基づく政策立案」のこと！', '「Before / After」を切り替えてみてね', 'ドミノは「もう一度たおす」で何回でも倒せるよ'],
-    youtube: ['スクロールすると電車が走るよ🚃', 'ぼくも電車に乗ってるよ！', '知って、行って、考えて、全力で楽しむ！'],
-    achievements: ['ボタンを押すと、獲得したスキルが見られるよ', 'カードはマウスを乗せると傾くよ'],
-    links: ['チャンネル登録よろしくね！', '最後まで見てくれてありがとう！']
+    journexia: ['JOURNEXIAは、ぼくが代表をしている観光専門のAIコンサルティングだよ', 'スクロールすると「ある町の物語」が進むよ', 'EBPMは「証拠に基づく政策立案」のこと！', '「Before / After」を切り替えてみてね', 'ドミノは「もう一度たおす」で何回でも倒せるよ'],
+    youtube: ['スクロールすると電車が日本を旅するよ🚃', 'ぼくも電車に乗ってるよ！九州から北海道まで！', '知って、行って、考えて、全力で楽しむ！'],
+    achievements: ['実績スタンプ帳だよ！表紙を押すと開くよ', 'ボタンを押すと、獲得したスキルが見られるよ', 'カードはマウスを乗せると傾くよ'],
+    links: ['チャンネル登録よろしくね！', 'いちばん下には終着駅があるよ🚉', '最後まで見てくれてありがとう！']
   };
   let gSec = '', gIdx = 0, gTimer;
   function guideSay(text) {
@@ -402,7 +380,7 @@
     { id: 'char', q: 'このキャラは？', keys: ['キャラ', 'イラスト', 'ねこ', '猫', 'ゾウ', '象', 'かわいい', '絵'],
       a: 'このキャラクターはぼく、こうぺいキングのイラストだよ！\nトップページのぼくを押すと、押すたびにちがうリアクションをするから試してみてね。', links: [go('トップへ戻る', '#top')] },
     { id: 'site', q: 'このサイトの遊び方', keys: ['遊び', 'サイト', '隠し', 'ひみつ', '秘密', '仕掛け', 'おもしろ', '面白'],
-      a: 'いろんな仕掛けがあるよ！\n・トップのぼくを押すと10種類のリアクション\n・About のステッカーはドラッグできる\n・チケットの裏にだれか隠れてる…\n・ドミノは何回でも倒せる\n・YouTube の路線図はスクロールで電車が走る' },
+      a: 'いろんな仕掛けがあるよ！\n・トップのぼくを押すと10種類のリアクション、長押しすると…？\n・メニューを押すと列車が通過して移動\n・About のステッカーはドラッグできる\n・JOURNEXIA の「ある町の物語」はスクロールで進む\n・YouTube ではぼくを乗せた電車が日本を旅する\n・実績はスタンプ帳になってる\n・いちばん下は終着駅のエンディング' },
     { id: 'hi', keys: ['こんにちは', 'こんばんは', 'おはよう', 'はじめまして', 'やあ', 'hello', 'hi'],
       a: 'こんにちは！こうぺいキングだよ👋\n気になることを聞いてみてね。' },
     { id: 'thx', keys: ['ありがとう', 'サンキュー', 'thanks', 'thank', '助かる', 'すごい', 'いいね'],
@@ -694,4 +672,174 @@
       if (open) burst(e.clientX || r.left + r.width / 2, e.clientY || r.top + r.height / 2, 12);
     });
   });
+
+  /* ---------- JOURNEXIA: scroll-driven town story ---------- */
+  (() => {
+    const story = $('#story');
+    if (!story) return;
+    const SCENES = [
+      ['ここは、ある観光地の町。', '自治体、DMO、宿や駅、お店、住民…。たくさんの人が、この町の観光に関わっています。'],
+      ['「たぶん、これがウケるはず」', '次の観光施策を決める会議。手元にあるのは、担当者の勘と去年の経験だけ。'],
+      ['結果は…空振り。', '観光客は思ったほど来ず、お店はシャッターを下ろすことに。失敗の損失は、関わる全員にのしかかります。'],
+      ['バラバラのデータを、ひとつに。', '交通・消費・口コミ・人流・宿泊・統計…。町じゅうに散らばったデータをJOURNEXIAが統合し、AIで分析します。'],
+      ['根拠があるから、確信をもって動ける。', 'データに基づく施策（EBPM）で、町の本当の魅力を再発見。観光客が戻り、町に明かりが灯ります。']
+    ];
+    const num = $('#storyNum'), h = $('#storyH'), t = $('#storyT'), bar = $('#storyBar'), card = $('.story-card', story);
+    const upd = () => {
+      const r = story.getBoundingClientRect();
+      const p = clamp(-r.top / Math.max(1, r.height - innerHeight), 0, 1);
+      bar.style.width = (p * 100).toFixed(1) + '%';
+      const n = Math.min(SCENES.length - 1, Math.floor(p * SCENES.length));
+      if (story.dataset.scene !== String(n)) {
+        story.dataset.scene = n;
+        num.textContent = n + 1;
+        h.textContent = SCENES[n][0];
+        t.textContent = SCENES[n][1];
+        if (!reduce) card.animate([{ transform: 'translateY(10px) scale(.97)', opacity: .4 }, { transform: 'none', opacity: 1 }], { duration: 450, easing: 'cubic-bezier(.34,1.56,.64,1)' });
+      }
+    };
+    addEventListener('scroll', upd, { passive: true });
+    addEventListener('resize', upd);
+    upd();
+  })();
+
+  /* ---------- YouTube: scroll-driven trip across Japan ---------- */
+  (() => {
+    const trip = $('#trip');
+    if (!trip) return;
+    const path = $('#railDone');
+    const train = $('#jtrain');
+    const body = $('#jtBody');
+    const stops = $$('.stop', trip);
+    const cards = $$('.st', trip);
+    const FR = [.04, .36, .64, .97];
+    const L = path.getTotalLength();
+    FR.forEach((f, i) => {
+      const pt = path.getPointAtLength(f * L);
+      stops[i].setAttribute('transform', `translate(${pt.x.toFixed(1)} ${pt.y.toFixed(1)})`);
+    });
+    let last = -1;
+    const upd = () => {
+      const r = trip.getBoundingClientRect();
+      const p = clamp(-r.top / Math.max(1, r.height - innerHeight) * 1.08, 0, 1);
+      path.style.strokeDashoffset = (1 - p).toFixed(4);
+      const len = p * L;
+      const a = path.getPointAtLength(Math.max(0, len - 1));
+      const b = path.getPointAtLength(Math.min(L, len + 1));
+      const pt = path.getPointAtLength(len);
+      const ang = Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI;
+      train.setAttribute('transform', `translate(${pt.x.toFixed(1)} ${pt.y.toFixed(1)})`);
+      body.setAttribute('transform', `rotate(${ang.toFixed(1)})`);
+      let cur = 0;
+      FR.forEach((f, i) => { if (p >= f - .02) cur = i; });
+      stops.forEach((s, i) => s.classList.toggle('on', p >= FR[i] - .02));
+      if (cur !== last) {
+        last = cur;
+        cards.forEach((c, i) => { c.classList.toggle('on', i <= cur); c.classList.toggle('cur', i === cur); });
+      }
+    };
+    addEventListener('scroll', upd, { passive: true });
+    addEventListener('resize', upd);
+    upd();
+  })();
+
+  /* ---------- section jump: a full-screen train passes, then we arrive ---------- */
+  (() => {
+    const pass = $('#passTrain');
+    const track = $('.pt-track', pass);
+    const dest = $('#ptDest');
+    let passing = false;
+    const jumpTo = id => {
+      const el = id === 'top' ? null : document.getElementById(id);
+      const top = el ? el.getBoundingClientRect().top + scrollY - 64 : 0;
+      scrollTo({ top, behavior: 'instant' });
+      if (el) history.replaceState(null, '', '#' + id);
+      else history.replaceState(null, '', location.pathname + location.search);
+    };
+    const rideTo = (id, label) => {
+      if (reduce || passing) { jumpTo(id); return; }
+      passing = true;
+      dest.textContent = '次は ' + label + ' ▶';
+      pass.classList.add('run');
+      const run = track.animate([{ transform: 'translateX(100vw)' }, { transform: 'translateX(-300vw)' }], { duration: 2000, easing: 'cubic-bezier(.45,.05,.55,.95)' });
+      setTimeout(() => jumpTo(id), 1000);
+      run.onfinish = () => { pass.classList.remove('run'); passing = false; };
+    };
+    $$('a', nav).forEach(a => a.addEventListener('click', e => {
+      e.preventDefault();
+      setMenu(false);
+      rideTo(a.getAttribute('href').slice(1), a.textContent.trim());
+    }));
+    $('#toTop').addEventListener('click', e => { e.preventDefault(); rideTo('top', 'トップ'); });
+  })();
+
+  /* ---------- achievements: passport stamp book ---------- */
+  (() => {
+    const book = $('#book');
+    const cover = $('#bookCover');
+    const pages = $('.book-pages', book);
+    let opened = false;
+    const open = () => {
+      if (opened) return;
+      opened = true;
+      book.classList.add('open');
+      if (reduce) return;
+      $$('.bigstamp', book).forEach((st, n) => setTimeout(() => {
+        pages.animate([{ transform: 'none' }, { transform: 'translate(3px,4px) rotate(.4deg)' }, { transform: 'translate(-2px,-1px)' }, { transform: 'none' }], { duration: 260 });
+        const r = st.getBoundingClientRect();
+        burst(r.left + r.width / 2, r.top + r.height / 2, 10);
+      }, (1.7 + n * .45 + .45) * 1000));
+    };
+    cover.addEventListener('click', open);
+    const bookIO = new IntersectionObserver(es => {
+      if (es[0].isIntersecting) { bookIO.disconnect(); setTimeout(open, 700); }
+    }, { threshold: .35 });
+    bookIO.observe(book);
+  })();
+
+  /* ---------- footer: terminal station ending ---------- */
+  (() => {
+    const ftr = $('#ftr');
+    const play = () => {
+      ftr.classList.remove('ending-on');
+      void ftr.offsetWidth;
+      ftr.classList.add('ending-on');
+    };
+    const endIO = new IntersectionObserver(es => {
+      if (es[0].isIntersecting) { endIO.disconnect(); play(); }
+    }, { threshold: .3 });
+    endIO.observe($('#ending'));
+    $('#endReplay').addEventListener('click', play);
+  })();
+
+  /* ---------- hidden: long-press the hero character for a giant dash ---------- */
+  let pressTimer;
+  let longFired = false;
+  const giantDash = () => {
+    if (reduce) { say('ダッシュ！（動きを減らす設定のため省略）'); return; }
+    say('ダッシュ！！🏃💨');
+    const wrap = document.createElement('div');
+    wrap.className = 'giant-wrap';
+    wrap.innerHTML = '<img src="assets/kopeiking.webp" alt="">';
+    document.body.appendChild(wrap);
+    const run = wrap.animate([
+      { transform: 'translateX(-110%)' },
+      { transform: `translateX(${innerWidth + 40}px)` }
+    ], { duration: 2800, easing: 'linear' });
+    const quake = $('main').animate(
+      [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(i => ({ transform: `translate(${i % 2 ? 3 : -3}px,${i % 3 ? 2 : -2}px)` })),
+      { duration: 280, iterations: 10 });
+    const trail = setInterval(() => {
+      const r = wrap.getBoundingClientRect();
+      burst(r.left + r.width * .2, innerHeight - 30, 5);
+    }, 160);
+    run.onfinish = () => { clearInterval(trail); quake.cancel(); wrap.remove(); say('…ただいま！ぜぇぜぇ'); };
+  };
+  char.addEventListener('pointerdown', () => {
+    longFired = false;
+    clearTimeout(pressTimer);
+    pressTimer = setTimeout(() => { longFired = true; giantDash(); }, 650);
+  });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => char.addEventListener(ev, () => clearTimeout(pressTimer)));
+  char.addEventListener('contextmenu', e => e.preventDefault());
 })();
