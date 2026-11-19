@@ -339,7 +339,13 @@
     links: ['チャンネル登録よろしくね！', 'いちばん下には終着駅があるよ🚉', '最後まで見てくれてありがとう！']
   };
   let gSec = '', gIdx = 0, gTimer;
+  // on phones, keep quiet inside pinned scroll scenes so the scroll hint stays visible
+  const inPinnedScene = () => innerWidth < 760 && ['story', 'trip'].some(id => {
+    const r = document.getElementById(id).getBoundingClientRect();
+    return r.top <= 0 && r.bottom >= innerHeight;
+  });
   function guideSay(text) {
+    if (inPinnedScene()) return;
     gBubble.textContent = text;
     gBubble.classList.add('on');
     clearTimeout(gTimer);
@@ -685,11 +691,14 @@
       ['根拠があるから、確信をもって動ける。', 'データに基づく施策（EBPM）で、町の本当の魅力を再発見。観光客が戻り、町に明かりが灯ります。']
     ];
     const num = $('#storyNum'), h = $('#storyH'), t = $('#storyT'), bar = $('#storyBar'), card = $('.story-card', story);
+    const hint = $('#storyHint'), hintText = $('.sh-text', hint);
     const upd = () => {
       const r = story.getBoundingClientRect();
       const p = clamp(-r.top / Math.max(1, r.height - innerHeight), 0, 1);
       bar.style.width = (p * 100).toFixed(1) + '%';
       const n = Math.min(SCENES.length - 1, Math.floor(p * SCENES.length));
+      hint.classList.toggle('hide', n === SCENES.length - 1);
+      hintText.textContent = n === 0 ? 'スクロールで物語が進むよ' : 'スクロールで次の場面へ（' + (n + 1) + ' / ' + SCENES.length + '）';
       if (story.dataset.scene !== String(n)) {
         story.dataset.scene = n;
         num.textContent = n + 1;
@@ -713,6 +722,7 @@
     const stops = $$('.stop', trip);
     const cards = $$('.st', trip);
     const FR = [.04, .36, .64, .97];
+    const tripHint = $('#tripHint'), tripText = $('.sh-text', tripHint);
     const L = path.getTotalLength();
     FR.forEach((f, i) => {
       const pt = path.getPointAtLength(f * L);
@@ -723,6 +733,8 @@
       const r = trip.getBoundingClientRect();
       const p = clamp(-r.top / Math.max(1, r.height - innerHeight) * 1.08, 0, 1);
       path.style.strokeDashoffset = (1 - p).toFixed(4);
+      tripHint.classList.toggle('hide', p > .96);
+      tripText.textContent = p < .02 ? 'スクロールで電車が進むよ' : 'そのままスクロールで次の駅へ';
       const len = p * L;
       const a = path.getPointAtLength(Math.max(0, len - 1));
       const b = path.getPointAtLength(Math.min(L, len + 1));

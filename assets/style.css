@@ -901,3 +901,14 @@ html.intro-play .hero,html.intro-play .hero *{animation-play-state:paused !impor
   .end-train{transform:none}
 }
 .chat[hidden]{display:none}
+
+/* ---------- scroll hints for pinned scenes ---------- */
+.story-pin,.trip-pin{padding-bottom:70px}
+.scroll-hint{position:absolute;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:3;display:flex;align-items:center;gap:10px;margin:0;padding:8px 18px;border-radius:999px;background:var(--fg);color:var(--bg);font-weight:700;font-size:13px;white-space:nowrap;box-shadow:3px 3px 0 var(--orange);pointer-events:none;transform:translateX(-50%);transition:opacity .4s,transform .4s var(--spring)}
+.scroll-hint.hide{opacity:0;transform:translate(-50%,14px)}
+.sh-mouse{position:relative;flex:none;width:15px;height:22px;border:2px solid currentColor;border-radius:8px}
+.sh-mouse::after{content:"";position:absolute;left:50%;top:4px;width:3px;height:5px;margin-left:-1.5px;border-radius:2px;background:currentColor;animation:wheel 1.4s ease-in-out infinite}
+@keyframes wheel{60%{transform:translateY(6px);opacity:0}61%{transform:none;opacity:0}100%{opacity:1}}
+.sh-arrow{font-weight:900;animation:arrowB 1.2s ease-in-out infinite}
+@media (pointer:coarse){.sh-mouse{width:16px;height:16px;border-radius:50%}.sh-mouse::after{display:none}}
+@media (max-width:760px){.scroll-hint{font-size:12px;padding:7px 14px}}
