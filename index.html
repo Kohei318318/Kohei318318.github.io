@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>こうぺいキング | KopeiKing</title>
-<meta name="description" content="こうぺいキング（KopeiKing）の自己紹介サイト。経営学部 / JOURNEXIA 代表 / 旅行・鉄道系YouTuber。">
+<meta name="description" content="こうぺいキング（KopeiKing）の自己紹介サイト。経営学部の学生 / 観光専門AIコンサルティング JOURNEXIA 代表 / 旅行・鉄道系YouTuber。">
 <meta name="theme-color" content="#fbf6ec">
 <meta property="og:title" content="こうぺいキング | KopeiKing">
-<meta property="og:description" content="経営学部 / JOURNEXIA 代表 / 旅行・鉄道系YouTuber">
+<meta property="og:description" content="学生 / JOURNEXIA 代表 / 旅行・鉄道系YouTuber / 学生起業">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://kohei318318.github.io/">
 <meta property="og:image" content="https://kohei318318.github.io/assets/kopeiking.jpg">
@@ -17,14 +17,37 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Noto+Sans+JP:wght@400;500;700;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
 <script>
-  // apply saved theme before paint to avoid a flash
-  document.documentElement.classList.add('js');
-  try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+  (function () {
+    var de = document.documentElement;
+    de.classList.add('js');
+    // apply saved theme before paint to avoid a flash
+    try { var t = localStorage.getItem('theme'); if (t) de.dataset.theme = t; } catch (e) {}
+    // opening animation: once per browser session, never with reduced motion
+    var show = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+    try { if (sessionStorage.getItem('introSeen')) show = false; } catch (e) {}
+    if (show) {
+      de.classList.add('intro-play', 'show-intro');
+      setTimeout(function () { de.classList.remove('intro-play', 'show-intro'); }, 9000); // safety net
+    }
+  })();
 </script>
 <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
 <a class="skip" href="#about">本文へスキップ</a>
+
+<!-- ============ OPENING ============ -->
+<div class="intro" id="intro">
+  <div class="intro-bg" aria-hidden="true"><i class="c-yellow"></i><i class="c-pink"></i><i class="c-teal"></i></div>
+  <div class="intro-stage" aria-hidden="true">
+    <p class="intro-bubble">ようこそ！</p>
+    <img class="intro-char" src="assets/kopeiking.webp" alt="" width="779" height="819">
+    <p class="intro-name"><span>K</span><span>O</span><span>P</span><span>E</span><span>I</span><span>K</span><span>I</span><span>N</span><span>G</span></p>
+    <div class="intro-bar"><div class="intro-fill"></div><img class="intro-runner" src="assets/kopeiking.webp" alt=""></div>
+    <p class="intro-pct"><b id="introPct">0</b>%  出発準備中…</p>
+  </div>
+  <button class="intro-skip" id="introSkip">スキップ ›</button>
+</div>
 
 <!-- scroll progress: a tiny train runs along the top -->
 <div class="rail" aria-hidden="true"><div class="rail-fill" id="railFill"></div><div class="rail-train" id="railTrain"><svg viewBox="0 0 40 20"><rect x="1" y="3" width="34" height="12" rx="5"/><rect x="6" y="6" width="6" height="4" rx="1" class="win"/><rect x="15" y="6" width="6" height="4" rx="1" class="win"/><rect x="24" y="6" width="6" height="4" rx="1" class="win"/><circle cx="10" cy="17" r="2.4"/><circle cx="27" cy="17" r="2.4"/></svg></div></div>
@@ -68,12 +91,13 @@
     <div class="wrap hero-in">
       <div class="hero-text">
         <p class="hello"><span class="wave" aria-hidden="true">👋</span> Hello, I'm</p>
-        <h1 class="title" id="title" aria-label="こうぺいキング">こうぺいキング</h1>
+        <h1 class="title" id="title">こうぺいキング</h1>
         <p class="en">KopeiKing</p>
         <p class="role">
           <span class="tag t1">JOURNEXIA 代表</span>
           <span class="tag t2">旅行・鉄道系YouTuber</span>
-          <span class="tag t3">経営学部</span>
+          <span class="tag t3">学生起業</span>
+          <span class="tag t4">経営学部</span>
         </p>
         <div class="btns">
           <a class="btn btn-yt magnet" href="https://youtube.com/@kopeiking_travel" target="_blank" rel="noopener">
@@ -90,10 +114,11 @@
       <div class="hero-art">
         <div class="blob" aria-hidden="true"></div>
         <div class="orbit" aria-hidden="true"><i></i><i></i><i></i></div>
-        <button class="char" id="char" aria-label="キャラクターをタップ！">
+        <button class="char" id="char" aria-label="キャラクターをタップすると色々なリアクションをします">
           <img src="assets/kopeiking.webp" alt="こうぺいキングのキャラクターイラスト" width="779" height="819">
         </button>
-        <p class="char-hint" id="charHint" aria-live="polite">tap me!</p>
+        <p class="char-hint" id="charHint" aria-live="polite">押してみて！</p>
+        <p class="char-count" id="charCount" aria-hidden="true"></p>
       </div>
     </div>
 
@@ -102,8 +127,8 @@
 
   <!-- marquee -->
   <div class="marquee" aria-hidden="true">
-    <div class="mq mq1"><div class="mq-in"><span>JOURNEXIA 代表</span><b>✦</b><span>旅行・鉄道系YouTuber</span><b>✦</b><span>経営学部</span><b>✦</b><span>AI × 公開データ</span><b>✦</b><span>知って、行って、考えて、全力で楽しむ。</span><b>✦</b></div></div>
-    <div class="mq mq2"><div class="mq-in"><span>KNOW</span><b>●</b><span>GO</span><b>▲</b><span>THINK</span><b>■</b><span>ENJOY</span><b>●</b><span>KOPEIKING</span><b>▲</b><span>KNOW</span><b>●</b><span>GO</span><b>▲</b><span>THINK</span><b>■</b><span>ENJOY</span><b>●</b></div></div>
+    <div class="mq mq1"><div class="mq-in"><span>JOURNEXIA 代表</span><img class="mq-face" src="assets/kopeiking.webp" alt=""><span>旅行・鉄道系YouTuber</span><img class="mq-face" src="assets/kopeiking.webp" alt=""><span>学生起業</span><img class="mq-face" src="assets/kopeiking.webp" alt=""><span>観光 × AI × データ</span><img class="mq-face" src="assets/kopeiking.webp" alt=""><span>確信のある地域創生へ。</span><img class="mq-face" src="assets/kopeiking.webp" alt=""></div></div>
+    <div class="mq mq2"><div class="mq-in"><span>KNOW</span><b>●</b><span>GO</span><b>▲</b><span>THINK</span><b>■</b><span>ENJOY</span><b>●</b><span>EBPM</span><b>▲</b><span>KNOW</span><b>●</b><span>GO</span><b>▲</b><span>THINK</span><b>■</b><span>ENJOY</span><b>●</b></div></div>
   </div>
 
   <!-- ============ ABOUT ============ -->
@@ -111,34 +136,41 @@
     <div class="wrap">
       <h2 class="sec-title" data-split>About<small>わたしについて</small></h2>
       <div class="ticket-stage">
-        <article class="ticket tilt rv" aria-label="プロフィール">
-          <div class="tk-head">
-            <span class="tk-kind">乗車券</span>
-            <span class="tk-no">No. 0318</span>
-          </div>
-          <div class="tk-route">
-            <span class="tk-from">いま</span>
-            <svg class="tk-arrow" viewBox="0 0 80 16" aria-hidden="true"><path d="M0 8h74M66 1l8 7-8 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span class="tk-to">みらい</span>
-          </div>
-          <dl class="tk-facts">
-            <div><dt>NAME</dt><dd>こうぺいキング / KopeiKing</dd></div>
-            <div><dt>UNIVERSITY</dt><dd>経営学部</dd></div>
-            <div><dt>ROLE</dt><dd>JOURNEXIA 代表</dd></div>
-            <div><dt>ACTIVITY</dt><dd>旅行・鉄道系YouTuber</dd></div>
-          </dl>
-          <div class="tk-foot"><span>KOPEIKING EXPRESS</span><span class="tk-valid">有効期間：ずっと</span></div>
-          <span class="tk-punch" aria-hidden="true"></span>
-          <span class="tk-stamp" aria-hidden="true">PASS</span>
-        </article>
-        <ul class="stickers" aria-label="キーワード">
-          <li class="stk c-orange" style="--r:-8deg">🚃 鉄道</li>
-          <li class="stk c-teal" style="--r:6deg">🧳 旅行</li>
-          <li class="stk c-blue" style="--r:-4deg">🤖 AI</li>
-          <li class="stk c-yellow" style="--r:9deg">📊 経営</li>
-          <li class="stk c-pink" style="--r:-10deg">🎬 動画制作</li>
-        </ul>
-        <p class="drag-hint">ステッカーはドラッグで動かせます</p>
+        <div class="ticket-wrap">
+          <button class="tk-peek" id="tkPeek" aria-label="チケットの裏に隠れているキャラクター"><img src="assets/kopeiking.webp" alt="" width="120" height="126" loading="lazy"></button>
+          <article class="ticket tilt rv" aria-label="プロフィール">
+            <div class="tk-head">
+              <span class="tk-kind">乗車券</span>
+              <span class="tk-no">No. 0318</span>
+            </div>
+            <div class="tk-route">
+              <span class="tk-from">いま</span>
+              <svg class="tk-arrow" viewBox="0 0 80 16" aria-hidden="true"><path d="M0 8h74M66 1l8 7-8 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span class="tk-to">みらい</span>
+            </div>
+            <dl class="tk-facts">
+              <div><dt>NAME</dt><dd>こうぺいキング / KopeiKing</dd></div>
+              <div><dt>SPECIALTY</dt><dd>経営学（経営学部）</dd></div>
+              <div><dt>ROLE</dt><dd>学生 / JOURNEXIA 代表</dd></div>
+              <div><dt>ACTIVITY</dt><dd>旅行・鉄道系YouTuber / 学生起業</dd></div>
+            </dl>
+            <div class="tk-foot"><span>KOPEIKING EXPRESS</span><span class="tk-valid">有効期間：ずっと</span></div>
+            <span class="tk-punch" aria-hidden="true"></span>
+            <span class="tk-stamp" aria-hidden="true">PASS</span>
+          </article>
+        </div>
+        <div class="stk-box">
+          <ul class="stickers" aria-label="キーワード">
+            <li class="stk c-orange" style="--r:-8deg">🚃 鉄道</li>
+            <li class="stk c-teal" style="--r:6deg">🧳 旅行</li>
+            <li class="stk c-blue" style="--r:-4deg">🤖 AI</li>
+            <li class="stk c-yellow" style="--r:9deg">📊 経営</li>
+            <li class="stk c-purple" style="--r:-6deg">🚀 学生起業</li>
+            <li class="stk c-pink" style="--r:-10deg">🎬 動画制作</li>
+            <li class="stk c-green" style="--r:5deg">🗾 地域創生</li>
+          </ul>
+          <p class="drag-hint">ステッカーはドラッグで動かせます</p>
+        </div>
       </div>
     </div>
   </section>
@@ -146,35 +178,98 @@
   <!-- ============ JOURNEXIA ============ -->
   <section class="sec jx" id="journexia">
     <div class="wrap">
-      <h2 class="sec-title" data-split>JOURNEXIA<small>代表を務めるプロジェクト</small></h2>
-      <p class="statement rv">AIと公開データで、<br><mark>倒木事故</mark>を未然に防ぐ。</p>
-      <p class="desc rv">JOURNEXIAは、自治体に向けた倒木予測システムを開発しています。AIと公開データを使って倒木のリスクを予測し、切るべき木を提示することで、倒木による事故を防ぎます。</p>
+      <h2 class="sec-title" data-split>JOURNEXIA<small>代表を務める観光専門AIコンサルティング</small></h2>
+      <p class="statement rv">勘に頼る観光政策から、<br><mark>確信のある地域創生へ。</mark></p>
+      <p class="lead rv">データ統合基盤 × AI伴走支援で、自治体・DMOの意思決定と地域の観光価値再発見を加速する観光専門AIコンサルティング「JOURNEXIA」</p>
 
-      <div class="forest rv" id="forest" aria-label="AIが木をスキャンし、倒れやすい木を見つけるイメージ" role="img">
-        <div class="scan" aria-hidden="true"></div>
-        <div class="trees" aria-hidden="true"></div>
-        <p class="forest-cap" aria-hidden="true"><span class="blink">●</span> SCANNING… <b id="riskCount">0</b> RISK FOUND</p>
+      <!-- problem -->
+      <div class="jx-block">
+        <p class="eyebrow rv"><span>PROBLEM</span>なぜ必要なのか</p>
+        <h3 class="jx-h rv">観光は、関わる人がとても多い。</h3>
+        <p class="desc rv">観光業には、自治体・DMO・宿泊や交通の事業者・地域住民など、多数のステークホルダーが関わります。だからこそ、勘や経験に頼った施策が失敗したときの損失は、関わる全員に広がり、極めて大きなものになります。</p>
+
+        <div class="domino rv" id="domino">
+          <div class="dom-row">
+            <img class="dom-pusher" src="assets/kopeiking.webp" alt="" width="60" height="63" loading="lazy">
+            <span class="dom first">勘頼みの施策</span>
+            <span class="dom">自治体</span>
+            <span class="dom">DMO</span>
+            <span class="dom">宿泊事業者</span>
+            <span class="dom">交通事業者</span>
+            <span class="dom">飲食・小売</span>
+            <span class="dom">地域住民</span>
+            <span class="dom">観光客</span>
+          </div>
+          <div class="dom-floor" aria-hidden="true"></div>
+          <div class="dom-foot">
+            <p class="dom-cap">ひとつの判断ミスが、<b>関わる全員</b>に波及する。</p>
+            <button class="pill-btn" id="domReplay">もう一度たおす ↻</button>
+          </div>
+        </div>
       </div>
 
-      <ol class="flow">
-        <li class="fl rv c-blue" style="--d:0s">
-          <svg viewBox="0 0 48 48" aria-hidden="true"><ellipse cx="24" cy="11" rx="15" ry="5"/><path d="M9 11v26c0 2.8 6.7 5 15 5s15-2.2 15-5V11M9 20c0 2.8 6.7 5 15 5s15-2.2 15-5M9 28.5c0 2.8 6.7 5 15 5s15-2.2 15-5"/></svg>
-          <b>01 DATA</b><strong>公開データを集める</strong><small>誰でも使える公開データを活用</small>
-        </li>
-        <li class="fl rv c-purple" style="--d:.12s">
-          <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="10" y="10" width="28" height="28" rx="6"/><rect x="18" y="18" width="12" height="12" rx="2"/><path d="M17 4v6M24 4v6M31 4v6M17 38v6M24 38v6M31 38v6M4 17h6M4 24h6M4 31h6M38 17h6M38 24h6M38 31h6"/></svg>
-          <b>02 AI</b><strong>倒木リスクを予測</strong><small>AIが倒れやすい木を見つけ出す</small>
-        </li>
-        <li class="fl rv c-orange" style="--d:.24s">
-          <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 4 12 22h7l-9 13h28l-9-13h7z"/><path d="M24 35v9"/><circle cx="38" cy="10" r="6"/><path d="M38 7v3.5M38 13v.2"/></svg>
-          <b>03 OUTPUT</b><strong>切るべき木を提示</strong><small>自治体が対応すべき木が分かる</small>
-        </li>
-        <li class="fl rv c-teal" style="--d:.36s">
-          <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 4 8 10v12c0 10 7 18 16 22 9-4 16-12 16-22V10z"/><path d="m16 24 6 6 11-12"/></svg>
-          <b>04 IMPACT</b><strong>事故を未然に防ぐ</strong><small>倒木による事故をなくす</small>
-        </li>
-      </ol>
-      <p class="aside rv">事故の防止を中心に、ほかにもさまざまな目的に向けて開発を進めています。</p>
+      <!-- solution -->
+      <div class="jx-block">
+        <p class="eyebrow rv"><span>SOLUTION</span>JOURNEXIAがすること</p>
+        <h3 class="jx-h rv">分断されたデータを、地域の資産に。</h3>
+        <p class="desc rv">観光に関わるデータは、組織ごと・目的ごとにバラバラに存在しています。JOURNEXIAはそれらをひとつの基盤に統合し、AIで分析することで、確固たる根拠（EBPM）に基づく地域活性化を実現します。</p>
+
+        <div class="dmap-ctl rv" role="group" aria-label="データの状態を切り替え">
+          <button class="seg" data-s="before" aria-pressed="true">Before：バラバラ</button>
+          <button class="seg" data-s="after" aria-pressed="false">After：JOURNEXIA</button>
+        </div>
+        <div class="dmap rv" id="dmap" data-state="before">
+          <svg class="dmap-lines" id="dmapLines" aria-hidden="true"></svg>
+          <div class="hub">
+            <img src="assets/kopeiking.webp" alt="" width="80" height="84" loading="lazy">
+            <b class="hub-after">JOURNEXIA</b>
+            <b class="hub-before">勘と経験…？</b>
+          </div>
+          <span class="dnode c-blue">🏨 宿泊データ</span>
+          <span class="dnode c-teal">🚶 人流データ</span>
+          <span class="dnode c-orange">🚃 交通データ</span>
+          <span class="dnode c-purple">💴 消費データ</span>
+          <span class="dnode c-pink">💬 口コミ・SNS</span>
+          <span class="dnode c-green">📈 統計データ</span>
+        </div>
+        <p class="dmap-cap" id="dmapCap" aria-live="polite">データが分断されたまま。判断は担当者の勘と経験に頼りがち。</p>
+      </div>
+
+      <!-- compare -->
+      <div class="jx-block">
+        <p class="eyebrow rv"><span>EBPM</span>根拠にもとづく政策づくり</p>
+        <h3 class="jx-h rv">「なんとなく」を「確信」に変える。</h3>
+        <div class="cmp rv">
+          <div class="cmp-head"><span></span><span class="bad">勘・経験に頼る施策</span><span class="good">EBPM（JOURNEXIA）</span></div>
+          <div class="cmp-row"><span class="cmp-k">判断の根拠</span><span class="bad"><i>✕</i>担当者の勘や過去の経験</span><span class="good"><i>◎</i>統合されたデータとAIの分析</span></div>
+          <div class="cmp-row"><span class="cmp-k">合意形成</span><span class="bad"><i>✕</i>関係者ごとに意見が割れやすい</span><span class="good"><i>◎</i>共通の根拠をもとに話し合える</span></div>
+          <div class="cmp-row"><span class="cmp-k">うまくいかないとき</span><span class="bad"><i>✕</i>原因がわからず損失が大きい</span><span class="good"><i>◎</i>検証して次の施策に活かせる</span></div>
+        </div>
+        <p class="note rv">EBPM：Evidence-Based Policy Making（証拠に基づく政策立案）</p>
+      </div>
+
+      <!-- service -->
+      <div class="jx-block">
+        <p class="eyebrow rv"><span>SERVICE</span>ふたつの柱</p>
+        <div class="pillars">
+          <article class="pillar rv c-blue">
+            <svg viewBox="0 0 48 48" aria-hidden="true"><ellipse cx="24" cy="11" rx="15" ry="5"/><path d="M9 11v26c0 2.8 6.7 5 15 5s15-2.2 15-5V11M9 20c0 2.8 6.7 5 15 5s15-2.2 15-5M9 28.5c0 2.8 6.7 5 15 5s15-2.2 15-5"/></svg>
+            <h4>データ統合基盤</h4>
+            <p>組織ごとに分断された観光データをつなぎ、地域の資産に変える。</p>
+          </article>
+          <span class="times rv" aria-hidden="true">×</span>
+          <article class="pillar rv c-orange" style="--d:.12s">
+            <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 4l4.5 11.5L40 20l-11.5 4.5L24 36l-4.5-11.5L8 20l11.5-4.5z"/><path d="M38 32l1.8 4.2L44 38l-4.2 1.8L38 44l-1.8-4.2L32 38l4.2-1.8z"/></svg>
+            <h4>AI伴走支援</h4>
+            <p>分析から施策づくり、効果の検証まで、AIを使って自治体・DMOに伴走する。</p>
+          </article>
+        </div>
+        <div class="goals rv">
+          <span class="goals-arrow" aria-hidden="true">↓</span>
+          <div class="goal c-teal"><b>GOAL 1</b>自治体・DMOの意思決定を加速</div>
+          <div class="goal c-pink"><b>GOAL 2</b>地域の観光価値を再発見</div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -188,6 +283,7 @@
       <div class="route" id="route">
         <div class="route-line" aria-hidden="true"><div class="route-fill" id="routeFill"></div></div>
         <div class="route-train" id="routeTrain" aria-hidden="true">
+          <img class="rider" src="assets/kopeiking.webp" alt="" width="40" height="42" loading="lazy">
           <svg viewBox="0 0 64 32"><path class="body" d="M6 4h44a12 12 0 0 1 12 12v6a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8a4 4 0 0 1 4-4z"/><rect class="win" x="9" y="9" width="9" height="7" rx="1.5"/><rect class="win" x="22" y="9" width="9" height="7" rx="1.5"/><rect class="win" x="35" y="9" width="9" height="7" rx="1.5"/><path class="win" d="M48 9h4a6 6 0 0 1 6 6v1H48z"/><rect class="stripe" x="2" y="19" width="60" height="2.5"/><circle class="wheel" cx="14" cy="28" r="3.5"/><circle class="wheel" cx="48" cy="28" r="3.5"/></svg>
         </div>
         <ol class="stations">
@@ -206,17 +302,16 @@
         <div class="vtrack" id="vtrack"><div class="vcard sk"><div class="thumb"></div><h4></h4></div><div class="vcard sk"><div class="thumb"></div><h4></h4></div></div>
         <div class="vdots" id="vdots"></div>
       </div>
-      <a class="btn btn-yt magnet yt-cta" href="https://youtube.com/@kopeiking_travel" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1c.5-1.9.5-5.8.5-5.8s0-3.9-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"/></svg>
-        チャンネルを見る
-      </a>
     </div>
   </section>
 
   <!-- ============ ACHIEVEMENTS ============ -->
   <section class="sec ach-sec" id="achievements">
     <div class="wrap">
-      <h2 class="sec-title" data-split>Achievements<small>実績</small></h2>
+      <div class="ach-title">
+        <h2 class="sec-title" data-split>Achievements<small>実績</small></h2>
+        <div class="trophy" aria-hidden="true"><img src="assets/kopeiking.webp" alt="" width="90" height="95" loading="lazy"><span>🏆</span></div>
+      </div>
 
       <div class="achs">
         <article class="ach tilt rv c-orange">
@@ -278,12 +373,18 @@
 
 <footer class="ftr">
   <div class="wrap ftr-in">
-    <img class="peek" src="assets/kopeiking.webp" alt="" width="120" height="126" loading="lazy">
+    <div class="parade" aria-hidden="true"><img src="assets/kopeiking.webp" alt=""><img src="assets/kopeiking.webp" alt=""><img src="assets/kopeiking.webp" alt=""></div>
     <p class="bye">Thanks for visiting!</p>
     <a class="btn btn-top magnet" href="#top" id="toTop">↑ TOP へ戻る</a>
     <p class="copy">© <span id="y">2026</span> KopeiKing</p>
   </div>
 </footer>
+
+<!-- guide character: gives a tip for each section -->
+<div class="guide" id="guide">
+  <p class="guide-bubble" id="guideBubble" role="status"></p>
+  <button class="guide-btn" id="guideBtn" aria-label="ガイドのこうぺいキング：押すとヒントが出ます"><img src="assets/kopeiking.webp" alt="" width="64" height="67"></button>
+</div>
 
 <script src="assets/main.js" defer></script>
 </body>

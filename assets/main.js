@@ -37,7 +37,8 @@
   title.removeAttribute('aria-label');
   split(title);
   $$('.ch', title).forEach(ch => ch.addEventListener('click', () => {
-    ch.classList.remove('boing'); void ch.offsetWidth; ch.classList.add('boing');
+    if (reduce) return;
+    ch.animate([{ transform: 'none' }, { transform: 'scale(1.25,.75)', offset: .3 }, { transform: 'scale(.85,1.2) translateY(-18px)', offset: .55 }, { transform: 'scale(1.05,.95)', offset: .8 }, { transform: 'none' }], { duration: 700, easing: 'ease-out' });
   }));
   $$('[data-split]').forEach(split);
 
@@ -220,46 +221,247 @@
     charImg.style.setProperty('--ty', (py * 10) + 'px');
   });
 
-  /* ---------- confetti ---------- */
-  function burst(x, y, count = 26) {
+  /* ---------- confetti (shapes or mini characters) ---------- */
+  function burst(x, y, count = 26, faces = false) {
     if (reduce) return;
     const kinds = ['tri', 'dot', 'sq'];
     for (let i = 0; i < count; i++) {
-      const el = document.createElement('i');
-      el.className = 'confetti ' + kinds[i % 3];
-      el.style.setProperty('--c', PALETTE[i % PALETTE.length]);
-      const size = rand(8, 16);
-      el.style.width = el.style.height = size + 'px';
+      let el;
+      if (faces) {
+        el = document.createElement('img');
+        el.src = 'assets/kopeiking.webp';
+        el.alt = '';
+        el.className = 'mini-char';
+        el.style.width = rand(30, 56) + 'px';
+      } else {
+        el = document.createElement('i');
+        el.className = 'confetti ' + kinds[i % 3];
+        el.style.setProperty('--c', PALETTE[i % PALETTE.length]);
+        el.style.width = el.style.height = rand(8, 16) + 'px';
+      }
       document.body.appendChild(el);
       const ang = rand(0, Math.PI * 2);
-      const dist = rand(80, 220);
+      const dist = rand(80, faces ? 300 : 220);
       const dx = Math.cos(ang) * dist, dy = Math.sin(ang) * dist - 80;
       const rot = rand(-540, 540);
       el.animate([
-        { transform: `translate(${x}px,${y}px) rotate(0) scale(1)`, opacity: 1 },
+        { transform: `translate(${x}px,${y}px) rotate(0) scale(.4)`, opacity: 1 },
         { transform: `translate(${x + dx}px,${y + dy}px) rotate(${rot / 2}deg) scale(1)`, opacity: 1, offset: .55 },
-        { transform: `translate(${x + dx * 1.2}px,${y + dy + 180}px) rotate(${rot}deg) scale(.6)`, opacity: 0 }
-      ], { duration: rand(900, 1500), easing: 'cubic-bezier(.2,.7,.4,1)' }).onfinish = () => el.remove();
+        { transform: `translate(${x + dx * 1.2}px,${y + dy + 220}px) rotate(${rot}deg) scale(.6)`, opacity: 0 }
+      ], { duration: rand(1000, faces ? 2000 : 1500), easing: 'cubic-bezier(.2,.7,.4,1)' }).onfinish = () => el.remove();
     }
   }
 
-  /* ---------- tap the character ---------- */
+  /* ---------- tap the character: a different reaction every time ---------- */
   const char = $('#char');
   const hint = $('#charHint');
-  const LINES = ['やあ！', '旅に出よう！', 'ガタンゴトン🚃', '知って、行って…', '考えて…', '全力で楽しむ！', 'まだ押す？', 'くすぐったい！', 'もうちょっと…', '🎉 コンプリート！'];
+  const counter = $('#charCount');
+  let running = null;
+  const play = (kf, duration, easing = 'ease-in-out') => {
+    if (reduce) return null;
+    if (running) running.cancel();
+    running = char.animate(kf, { duration, easing });
+    return running;
+  };
+  const center = () => { const r = char.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; };
+  const ACTIONS = [
+    ['ぴょーん！', () => play([
+      { transform: 'none' }, { transform: 'translateY(12px) scale(1.12,.86)', offset: .2 },
+      { transform: 'translateY(-90px) rotate(-10deg) scale(.95,1.06)', offset: .55 },
+      { transform: 'translateY(8px) scale(1.08,.92)', offset: .85 }, { transform: 'none' }], 900)],
+    ['くるりん♪', () => play([{ transform: 'rotate(0) scale(1)' }, { transform: 'rotate(200deg) scale(.8)', offset: .5 }, { transform: 'rotate(360deg) scale(1)' }], 900)],
+    ['ぶるぶる…さむい！', () => play([0, -10, 10, -10, 10, -8, 8, -5, 5, 0].map(v => ({ transform: `translateX(${v}px) rotate(${v / 3}deg)` })), 800, 'linear')],
+    ['ちょっと散歩してくる！', () => {
+      const a = play([
+        { transform: 'none' }, { transform: 'translateX(-24px) rotate(-6deg)', offset: .12 },
+        { transform: 'translateX(110vw) rotate(12deg)', offset: .45 }, { transform: 'translateX(-110vw) rotate(12deg)', offset: .46 },
+        { transform: 'translateX(14px) rotate(-4deg)', offset: .9 }, { transform: 'none' }], 2400);
+      if (a) a.onfinish = () => say('ただいま！🧳');
+    }],
+    ['でっかくなっちゃった！', () => play([{ transform: 'scale(1)' }, { transform: 'scale(1.45)', offset: .25 }, { transform: 'scale(1.4)', offset: .75 }, { transform: 'scale(1)' }], 1500, 'cubic-bezier(.3,1.4,.5,1)')],
+    ['分身の術！', () => { play([{ transform: 'scale(1)' }, { transform: 'scale(.8)', offset: .3 }, { transform: 'scale(1)' }], 500); const [x, y] = center(); burst(x, y, 9, true); }],
+    ['カラフルモード！', () => play([{ filter: 'hue-rotate(0deg)' }, { filter: 'hue-rotate(360deg) saturate(1.6)' }, { filter: 'hue-rotate(720deg)' }], 1800, 'linear')],
+    ['ぺっちゃんこ…', () => { char.style.transformOrigin = '50% 100%'; play([
+      { transform: 'none' }, { transform: 'scale(1.3,.35)', offset: .2 }, { transform: 'scale(1.3,.35)', offset: .6 },
+      { transform: 'scale(.9,1.15)', offset: .8 }, { transform: 'none' }], 1300); }],
+    ['あっちむいて…ほい！', () => play([{ transform: 'scaleX(1)' }, { transform: 'scaleX(-1)', offset: .3 }, { transform: 'scaleX(-1)', offset: .7 }, { transform: 'scaleX(1)' }], 1400)],
+    ['ねむい…💤', () => { char.style.transformOrigin = '50% 100%'; play([
+      { transform: 'none' }, { transform: 'rotate(-75deg) translateY(10px)', offset: .3 }, { transform: 'rotate(-75deg) translateY(10px)', offset: .75 },
+      { transform: 'translateY(-40px) rotate(8deg)', offset: .9 }, { transform: 'none' }], 2400); }]
+  ];
+  const say = text => {
+    hint.textContent = text;
+    if (!reduce) hint.animate([{ transform: 'scale(.6) rotate(-8deg)' }, { transform: 'none' }], { duration: 450, easing: 'cubic-bezier(.34,1.56,.64,1)' });
+  };
   let taps = 0;
   char.addEventListener('click', e => {
-    const r = char.getBoundingClientRect();
-    const x = e.clientX || r.left + r.width / 2;
-    const y = e.clientY || r.top + r.height / 2;
-    char.classList.remove('jump'); void char.offsetWidth; char.classList.add('jump');
-    hint.textContent = LINES[taps % LINES.length];
-    hint.classList.remove('bump'); void hint.offsetWidth; hint.classList.add('bump');
+    char.style.transformOrigin = '';
+    const [action, fn] = ACTIONS[taps % ACTIONS.length];
     taps++;
-    if (taps % LINES.length === 0) {
-      for (let k = 0; k < 6; k++) setTimeout(() => burst(rand(0, innerWidth), rand(0, innerHeight * .6), 30), k * 160);
-    } else burst(x, y);
+    say(action);
+    fn();
+    const found = Math.min(taps, ACTIONS.length);
+    counter.textContent = 'リアクション ' + found + ' / ' + ACTIONS.length;
+    counter.classList.add('on');
+    if (taps === ACTIONS.length) {
+      setTimeout(() => {
+        say('🎉 全部見てくれてありがとう！');
+        for (let k = 0; k < 6; k++) setTimeout(() => burst(rand(0, innerWidth), rand(0, innerHeight * .6), 24, k % 2 === 0), k * 180);
+      }, 1200);
+    } else if (taps % 3 === 0) {
+      const [x, y] = center(); burst(x, y, 18);
+    }
   });
+
+  /* ---------- opening animation ---------- */
+  (() => {
+    const intro = $('#intro');
+    if (!document.documentElement.classList.contains('show-intro')) return;
+    const pct = $('#introPct');
+    const skip = $('#introSkip');
+    const t0 = performance.now();
+    let done = false;
+    const count = now => {
+      const p = clamp((now - t0 - 900) / 1800, 0, 1);
+      pct.textContent = Math.round(p * 100);
+      if (!done && p < 1) requestAnimationFrame(count);
+    };
+    requestAnimationFrame(count);
+    const finish = () => {
+      if (done) return;
+      done = true;
+      try { sessionStorage.setItem('introSeen', '1'); } catch (err) {}
+      const [x, y] = center();
+      intro.style.setProperty('--ox', x + 'px');
+      intro.style.setProperty('--oy', y + 'px');
+      pct.textContent = '100';
+      intro.classList.add('out');
+      document.documentElement.classList.remove('intro-play');
+      setTimeout(() => document.documentElement.classList.remove('show-intro'), 950);
+    };
+    setTimeout(finish, 3200);
+    intro.addEventListener('click', finish);
+    addEventListener('keydown', e => { if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') finish(); });
+    skip.focus({ preventScroll: true });
+  })();
+
+  /* ---------- character hiding behind the ticket ---------- */
+  const peek = $('#tkPeek');
+  peek.addEventListener('click', () => {
+    peek.classList.add('shy');
+    guideSay('見つかっちゃった…！');
+    setTimeout(() => peek.classList.remove('shy'), 1600);
+  });
+
+  /* ---------- guide character with tips per section ---------- */
+  const guide = $('#guide');
+  const gBubble = $('#guideBubble');
+  const gBtn = $('#guideBtn');
+  const TIPS = {
+    about: ['ぼくがこうぺいキング！よろしくね', 'ステッカーはドラッグで動かせるよ', 'チケットの裏にだれか隠れてる…？'],
+    journexia: ['JOURNEXIAは、ぼくが代表をしている観光専門のAIコンサルティングだよ', 'EBPMは「証拠に基づく政策立案」のこと！', '「Before / After」を切り替えてみてね', 'ドミノは「もう一度たおす」で何回でも倒せるよ'],
+    youtube: ['スクロールすると電車が走るよ🚃', 'ぼくも電車に乗ってるよ！', '知って、行って、考えて、全力で楽しむ！'],
+    achievements: ['ボタンを押すと、獲得したスキルが見られるよ', 'カードはマウスを乗せると傾くよ'],
+    links: ['チャンネル登録よろしくね！', '最後まで見てくれてありがとう！']
+  };
+  let gSec = '', gIdx = 0, gTimer;
+  function guideSay(text) {
+    gBubble.textContent = text;
+    gBubble.classList.add('on');
+    clearTimeout(gTimer);
+    gTimer = setTimeout(() => gBubble.classList.remove('on'), 5200);
+  }
+  const hop = () => { if (!reduce) $('img', gBtn).animate([{ transform: 'none' }, { transform: 'translateY(-22px) rotate(-10deg)', offset: .4 }, { transform: 'none' }], { duration: 550, easing: 'cubic-bezier(.34,1.56,.64,1)' }); };
+  gBtn.addEventListener('click', () => {
+    const list = TIPS[gSec] || TIPS.about;
+    gIdx = (gIdx + 1) % list.length;
+    guideSay(list[gIdx]);
+    hop();
+  });
+  const guideIO = new IntersectionObserver(es => es.forEach(e => {
+    if (!e.isIntersecting || !TIPS[e.target.id] || e.target.id === gSec) return;
+    gSec = e.target.id; gIdx = 0;
+    if (guide.classList.contains('on')) { guideSay(TIPS[gSec][0]); hop(); }
+  }), { rootMargin: '-40% 0px -55% 0px' });
+  $$('main section[id]').forEach(s => guideIO.observe(s));
+  const guideVis = () => {
+    const show = scrollY > innerHeight * .7 && !nav.classList.contains('open');
+    if (show && !guide.classList.contains('on') && gSec) setTimeout(() => guideSay(TIPS[gSec][gIdx]), 500);
+    guide.classList.toggle('on', show);
+  };
+  addEventListener('scroll', guideVis, { passive: true });
+  guideVis();
+
+  /* ---------- JOURNEXIA: domino ---------- */
+  const domino = $('#domino');
+  $$('.dom', domino).forEach((d, i) => d.style.setProperty('--i', i));
+  const topple = () => domino.classList.add('fall');
+  const domIO = new IntersectionObserver(es => {
+    if (es[0].isIntersecting) { setTimeout(topple, 900); domIO.disconnect(); }
+  }, { threshold: .55 });
+  domIO.observe(domino);
+  $('#domReplay').addEventListener('click', () => {
+    domino.classList.add('reset');
+    domino.classList.remove('fall');
+    void domino.offsetWidth;
+    domino.classList.remove('reset');
+    setTimeout(topple, 250);
+  });
+
+  /* ---------- JOURNEXIA: scattered data -> integrated ---------- */
+  const dmap = $('#dmap');
+  const dsvg = $('#dmapLines');
+  const dnodes = $$('.dnode', dmap);
+  const dcap = $('#dmapCap');
+  const segs = $$('.seg');
+  const BEFORE = [[22, 15, -10], [78, 12, 8], [17, 58, 6], [82, 54, -12], [30, 87, 10], [72, 85, -6]];
+  const CAPS = {
+    before: 'データが組織ごとに分断されたまま。判断は担当者の勘と経験に頼りがち。',
+    after: 'データを統合してAIで分析。根拠をもって、関係者みんなで意思決定できる！'
+  };
+  let touched = false;
+  const setState = s => {
+    dmap.dataset.state = s;
+    dnodes.forEach((n, i) => {
+      n.style.setProperty('--i', i);
+      if (s === 'after') {
+        n.style.setProperty('--x', n.dataset.ax + '%');
+        n.style.setProperty('--y', n.dataset.ay + '%');
+        n.style.removeProperty('--rot');
+      } else {
+        n.style.setProperty('--x', BEFORE[i][0] + '%');
+        n.style.setProperty('--y', BEFORE[i][1] + '%');
+        n.style.setProperty('--rot', BEFORE[i][2] + 'deg');
+      }
+    });
+    segs.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.s === s)));
+    dcap.textContent = CAPS[s];
+  };
+  const layout = () => {
+    const w = dmap.clientWidth, h = dmap.clientHeight;
+    const rx = w < 600 ? 31 : 36, ry = 35;
+    dsvg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+    dnodes.forEach((n, i) => {
+      const a = (-90 + i * 60) * Math.PI / 180;
+      n.dataset.ax = (50 + rx * Math.cos(a)).toFixed(2);
+      n.dataset.ay = (50 + ry * Math.sin(a)).toFixed(2);
+    });
+    dsvg.innerHTML = dnodes.map((n, i) => {
+      const x = n.dataset.ax / 100 * w, y = n.dataset.ay / 100 * h;
+      const pts = `x1="${x}" y1="${y}" x2="${w / 2}" y2="${h / 2}"`;
+      return `<line class="ln" style="--i:${i}" pathLength="1" ${pts}/><line class="flow" pathLength="1" ${pts}/>`;
+    }).join('');
+    setState(dmap.dataset.state);
+  };
+  layout();
+  addEventListener('resize', layout);
+  segs.forEach(b => b.addEventListener('click', () => { touched = true; setState(b.dataset.s); }));
+  const mapIO = new IntersectionObserver(es => {
+    if (!es[0].isIntersecting) return;
+    mapIO.disconnect();
+    setTimeout(() => { if (!touched) setState('after'); }, 1800);
+  }, { threshold: .5 });
+  mapIO.observe(dmap);
 
   /* ---------- draggable stickers ---------- */
   $$('.stk').forEach(el => {
@@ -279,58 +481,6 @@
     el.addEventListener('pointerup', up);
     el.addEventListener('pointercancel', up);
   });
-
-  /* ---------- JOURNEXIA forest scan ---------- */
-  const forest = $('#forest');
-  const treesBox = $('.trees', forest);
-  const scan = $('.scan', forest);
-  const riskCount = $('#riskCount');
-  const N = innerWidth < 600 ? 9 : 14;
-  const RISKY = new Set(innerWidth < 600 ? [2, 6] : [3, 8, 11]);
-  const GREENS = ['#2e8a4a', '#12897b', '#3f9d5a', '#1f7a5c'];
-  const trees = [];
-  for (let i = 0; i < N; i++) {
-    const t = document.createElement('div');
-    t.className = 'tree';
-    const h = rand(.8, 1.2);
-    t.style.setProperty('--dl', rand(-3, 0) + 's');
-    t.style.setProperty('--tc', GREENS[i % GREENS.length]);
-    t.innerHTML = i % 3 === 1
-      ? `<svg viewBox="0 0 40 ${70 * h}"><rect class="trunk" x="17" y="${48 * h}" width="6" height="${22 * h}"/><circle class="leaf" cx="20" cy="${30 * h}" r="${18 * h}"/></svg>`
-      : `<svg viewBox="0 0 40 ${70 * h}"><rect class="trunk" x="17" y="${50 * h}" width="6" height="${20 * h}"/><path class="leaf" d="M20 0 38 ${30 * h}H28L40 ${54 * h}H0L12 ${30 * h}H2z"/></svg>`;
-    treesBox.appendChild(t);
-    trees.push(t);
-  }
-  if (reduce) {
-    trees.forEach((t, i) => t.classList.toggle('risk', RISKY.has(i)));
-    riskCount.textContent = RISKY.size;
-    scan.style.display = 'none';
-  } else {
-    let visible = false;
-    new IntersectionObserver(es => { visible = es[0].isIntersecting; }).observe(forest);
-    const DUR = 4200, HOLD = 1400;
-    let start = performance.now();
-    const step = now => {
-      if (visible) {
-        const t = (now - start) % (DUR + HOLD);
-        const p = Math.min(1, t / DUR);
-        scan.style.setProperty('--sx', (-5 + p * 110) + '%');
-        const fr = forest.getBoundingClientRect();
-        const sx = fr.left + fr.width * (-0.05 + p * 1.1);
-        let found = 0;
-        trees.forEach((tr, i) => {
-          const b = tr.getBoundingClientRect();
-          const passed = sx > b.left + b.width / 2;
-          const flag = RISKY.has(i) && passed && t < DUR + HOLD - 80;
-          if (tr.classList.contains('risk') !== flag) tr.classList.toggle('risk', flag);
-          if (flag) found++;
-        });
-        riskCount.textContent = found;
-      } else start = now;
-      requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  }
 
   /* ---------- latest videos ---------- */
   (() => {
