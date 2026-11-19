@@ -255,7 +255,6 @@
   /* ---------- tap the character: a different reaction every time ---------- */
   const char = $('#char');
   const hint = $('#charHint');
-  const counter = $('#charCount');
   let running = null;
   const play = (kf, duration, easing = 'ease-in-out') => {
     if (reduce) return null;
@@ -300,9 +299,6 @@
     taps++;
     say(action);
     fn();
-    const found = Math.min(taps, ACTIONS.length);
-    counter.textContent = 'リアクション ' + found + ' / ' + ACTIONS.length;
-    counter.classList.add('on');
     if (taps === ACTIONS.length) {
       setTimeout(() => {
         say('🎉 全部見てくれてありがとう！');
@@ -372,23 +368,151 @@
     gTimer = setTimeout(() => gBubble.classList.remove('on'), 5200);
   }
   const hop = () => { if (!reduce) $('img', gBtn).animate([{ transform: 'none' }, { transform: 'translateY(-22px) rotate(-10deg)', offset: .4 }, { transform: 'none' }], { duration: 550, easing: 'cubic-bezier(.34,1.56,.64,1)' }); };
-  gBtn.addEventListener('click', () => {
-    const list = TIPS[gSec] || TIPS.about;
-    gIdx = (gIdx + 1) % list.length;
-    guideSay(list[gIdx]);
-    hop();
+  gBubble.addEventListener('click', () => openChat());
+  gBtn.addEventListener('click', () => (chat.hidden ? openChat() : closeChat()));
+
+  /* ---------- Q&A chatbot (answers from this site's content, no server) ---------- */
+  const chat = $('#chat');
+  const chatLog = $('#chatLog');
+  const chatQuick = $('#chatQuick');
+  const chatForm = $('#chatForm');
+  const chatInput = $('#chatInput');
+  const go = (label, href) => ({ label, href });
+  const KB = [
+    { id: 'who', q: 'こうぺいキングって誰？', keys: ['誰', 'だれ', '自己紹介', 'プロフィール', 'こうぺい', 'kopei', 'あなた', 'きみ', '君', '何者', 'について'],
+      a: 'ぼくはこうぺいキング（KopeiKing）！\n経営学部で経営学を学ぶ学生で、観光専門AIコンサルティング「JOURNEXIA」の代表をしているよ。旅行・鉄道系YouTuberとしても活動中！', links: [go('About を見る', '#about')] },
+    { id: 'jx', q: 'JOURNEXIAって何？', keys: ['journexia', 'ジャーネクシア', '会社', '事業', 'サービス', 'コンサル', '起業', 'スタートアップ', '代表'],
+      a: 'JOURNEXIAは、データ統合基盤 × AI伴走支援で、自治体・DMOの意思決定と地域の観光価値再発見を加速する観光専門AIコンサルティングだよ。\nキャッチコピーは「勘に頼る観光政策から、確信のある地域創生へ。」', links: [go('JOURNEXIA を見る', '#journexia')] },
+    { id: 'why', q: 'なぜ観光にデータが必要？', keys: ['なぜ', 'なんで', '理由', '課題', '問題', '必要', 'ステークホルダー', '勘', '経験', '失敗', '損失'],
+      a: '観光業には、自治体・DMO・宿泊や交通の事業者・地域住民など、たくさんのステークホルダーが関わるんだ。\nだから勘や経験に頼った施策が失敗すると、その損失は関わる全員に広がって、とても大きくなっちゃう。分断されたデータを資産に変えて、根拠のある判断をすることが大事なんだ。', links: [go('ドミノの図を見る', '#domino')] },
+    { id: 'ebpm', q: 'EBPMって？', keys: ['ebpm', 'エビデンス', '根拠', '証拠', '政策立案', 'evidence'],
+      a: 'EBPMは Evidence-Based Policy Making の略で、「証拠に基づく政策立案」のこと！\n勘や経験だけでなく、データや分析結果を根拠にして政策を決める考え方だよ。JOURNEXIAは観光の分野でこれを実現しようとしているんだ。', links: [go('比較表を見る', '#journexia')] },
+    { id: 'how', q: 'JOURNEXIAは何をするの？', keys: ['何をする', 'なにをする', 'どうやって', '仕組み', 'データ統合', '基盤', '伴走', '柱', 'できること'],
+      a: 'ふたつの柱があるよ。\n① データ統合基盤：宿泊・人流・交通・消費・口コミ・統計など、組織ごとにバラバラなデータをつないで地域の資産にする\n② AI伴走支援：分析から施策づくり、効果の検証まで、AIを使って自治体・DMOに伴走する', links: [go('Before / After の図を見る', '#dmap')] },
+    { id: 'yt', q: 'YouTubeではどんな動画？', keys: ['youtube', 'ユーチューブ', '動画', 'チャンネル', '旅行', '鉄道', '電車', '旅'],
+      a: '旅行・鉄道系の動画をつくっているよ🚃\n大事にしているのは「知って、行って、考えて、全力で楽しむ。」\n出発前に調べて知る → 実際に行って確かめる → 現地で考える → 自分なりに全力で楽しむ、という旅のスタイルを動画に込めているんだ。', links: [go('YouTube セクション', '#youtube'), go('チャンネルを開く ↗', 'https://youtube.com/@kopeiking_travel')] },
+    { id: 'ach', q: 'これまでの実績は？', keys: ['実績', '成果', '受賞', '賞', 'プログラム', 'gci', '講座', '修了', 'ピッチ', '東大', '松尾'],
+      a: '主な実績はこの3つ！\n・AI起業サマープログラム_2026：20チーム中5チームだけが選ばれるファイナルピッチに登壇\n・GCI 2026 Summer：Advanced修了＋模範賞\n・2026年 大規模言語モデル講座 1：修了\n（いずれも東京大学 松尾・岩澤研究室の講座だよ）', links: [go('Achievements を見る', '#achievements')] },
+    { id: 'skill', q: 'どんなスキルがある？', keys: ['スキル', '技術', 'できる', 'python', 'プログラミング', 'ai', '機械学習', 'llm', 'sql', '得意'],
+      a: '講座やプログラムで身につけたスキルはたとえば…\n・データ分析：Python / NumPy / Pandas / Matplotlib / SQL / 機械学習\n・LLM：Transformer / プロンプティング / ファインチューニング / RLHF など\n・事業づくり：課題発見・事業構想 / 仮説検証 / ビジネスモデル設計 / ピッチ', links: [go('スキルの一覧を見る', '#achievements')] },
+    { id: 'study', q: '何を勉強してる？', keys: ['大学', '学部', '専攻', '専門', '勉強', '経営', '学生', 'specialty'],
+      a: '経営学部で経営学を学んでいる学生だよ📊\n学生起業家として、JOURNEXIAの代表もしているんだ。', links: [go('About を見る', '#about')] },
+    { id: 'contact', q: 'SNS・連絡先は？', keys: ['連絡', 'sns', 'リンク', 'github', 'フォロー', '問い合わせ', 'コンタクト', 'つながる'],
+      a: 'YouTube と GitHub で活動しているよ！チャンネル登録やフォローしてくれるとうれしいな。', links: [go('YouTube ↗', 'https://youtube.com/@kopeiking_travel'), go('GitHub ↗', 'https://github.com/Kohei318318')] },
+    { id: 'char', q: 'このキャラは？', keys: ['キャラ', 'イラスト', 'ねこ', '猫', 'ゾウ', '象', 'かわいい', '絵'],
+      a: 'このキャラクターはぼく、こうぺいキングのイラストだよ！\nトップページのぼくを押すと、押すたびにちがうリアクションをするから試してみてね。', links: [go('トップへ戻る', '#top')] },
+    { id: 'site', q: 'このサイトの遊び方', keys: ['遊び', 'サイト', '隠し', 'ひみつ', '秘密', '仕掛け', 'おもしろ', '面白'],
+      a: 'いろんな仕掛けがあるよ！\n・トップのぼくを押すと10種類のリアクション\n・About のステッカーはドラッグできる\n・チケットの裏にだれか隠れてる…\n・ドミノは何回でも倒せる\n・YouTube の路線図はスクロールで電車が走る' },
+    { id: 'hi', keys: ['こんにちは', 'こんばんは', 'おはよう', 'はじめまして', 'やあ', 'hello', 'hi'],
+      a: 'こんにちは！こうぺいキングだよ👋\n気になることを聞いてみてね。' },
+    { id: 'thx', keys: ['ありがとう', 'サンキュー', 'thanks', 'thank', '助かる', 'すごい', 'いいね'],
+      a: 'どういたしまして！そう言ってもらえるとうれしいな😊' }
+  ];
+  const QUICK = ['who', 'jx', 'why', 'ebpm', 'yt', 'ach', 'skill', 'contact', 'site'];
+  const norm = t => t.toLowerCase().replace(/[\s　？?！!。、,.]/g, '');
+  const answer = text => {
+    const n = norm(text);
+    let best = null, score = 0;
+    KB.forEach(item => {
+      let s = 0;
+      item.keys.forEach(k => { if (n.includes(norm(k))) s += k.length; });
+      if (item.q && n === norm(item.q)) s += 100;
+      if (s > score) { score = s; best = item; }
+    });
+    return best || {
+      a: 'ごめんね、その質問にはまだ答えられないんだ…🙇\nJOURNEXIA・YouTube・実績・スキルのことなら答えられるよ！下のボタンからも選べるよ。'
+    };
+  };
+  const scrollLog = () => { chatLog.scrollTop = chatLog.scrollHeight; };
+  const addMsg = (text, who, links) => {
+    const m = document.createElement('div');
+    m.className = 'msg ' + who;
+    m.textContent = text;
+    if (links && links.length) {
+      const box = document.createElement('div');
+      box.className = 'msg-links';
+      links.forEach(l => {
+        const a = document.createElement('a');
+        a.href = l.href;
+        a.textContent = l.label;
+        if (/^https?:/.test(l.href)) { a.target = '_blank'; a.rel = 'noopener'; }
+        else a.addEventListener('click', () => { if (innerWidth < 760) closeChat(); });
+        box.appendChild(a);
+      });
+      m.appendChild(box);
+    }
+    chatLog.appendChild(m);
+    scrollLog();
+  };
+  let busy = false;
+  const ask = text => {
+    text = text.trim();
+    if (!text || busy) return;
+    busy = true;
+    addMsg(text, 'me');
+    const typing = document.createElement('div');
+    typing.className = 'msg bot typing';
+    typing.innerHTML = '<i></i><i></i><i></i>';
+    chatLog.appendChild(typing);
+    scrollLog();
+    const res = answer(text);
+    setTimeout(() => {
+      typing.remove();
+      addMsg(res.a, 'bot', res.links);
+      busy = false;
+      hop();
+    }, reduce ? 0 : 500 + Math.min(900, res.a.length * 6));
+  };
+  chatQuick.innerHTML = '';
+  QUICK.forEach(id => {
+    const item = KB.find(k => k.id === id);
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = item.q;
+    b.addEventListener('click', () => ask(item.q));
+    chatQuick.appendChild(b);
   });
+  chatForm.addEventListener('submit', e => {
+    e.preventDefault();
+    ask(chatInput.value);
+    chatInput.value = '';
+  });
+  let greeted = false;
+  function openChat() {
+    chat.hidden = false;
+    requestAnimationFrame(() => chat.classList.add('open'));
+    guide.classList.add('chatting', 'on');
+    gBubble.classList.remove('on');
+    gBtn.setAttribute('aria-expanded', 'true');
+    gBtn.setAttribute('aria-label', 'チャットを閉じる');
+    if (!greeted) {
+      greeted = true;
+      addMsg('やあ！こうぺいキングだよ👋\nぼくのことやJOURNEXIA、YouTubeのことなら何でも聞いてね。下のボタンから選んでもOK！', 'bot');
+    }
+    hop();
+    if (fine) chatInput.focus({ preventScroll: true });
+  }
+  function closeChat() {
+    chat.classList.remove('open');
+    guide.classList.remove('chatting');
+    gBtn.setAttribute('aria-expanded', 'false');
+    gBtn.setAttribute('aria-label', 'こうぺいキングに質問する');
+    setTimeout(() => { if (!chat.classList.contains('open')) chat.hidden = true; }, 350);
+    guideVis();
+  }
+  $('#chatClose').addEventListener('click', () => { closeChat(); gBtn.focus(); });
+  addEventListener('keydown', e => { if (e.key === 'Escape' && !chat.hidden) { closeChat(); gBtn.focus(); } });
   const guideIO = new IntersectionObserver(es => es.forEach(e => {
     if (!e.isIntersecting || !TIPS[e.target.id] || e.target.id === gSec) return;
     gSec = e.target.id; gIdx = 0;
-    if (guide.classList.contains('on')) { guideSay(TIPS[gSec][0]); hop(); }
+    if (guide.classList.contains('on') && chat.hidden) { guideSay(TIPS[gSec][0] + '（押すと質問できるよ）'); hop(); }
   }), { rootMargin: '-40% 0px -55% 0px' });
   $$('main section[id]').forEach(s => guideIO.observe(s));
-  const guideVis = () => {
-    const show = scrollY > innerHeight * .7 && !nav.classList.contains('open');
-    if (show && !guide.classList.contains('on') && gSec) setTimeout(() => guideSay(TIPS[gSec][gIdx]), 500);
+  function guideVis() {
+    const show = !chat.hidden || (scrollY > innerHeight * .7 && !nav.classList.contains('open'));
+    if (show && !guide.classList.contains('on') && gSec) setTimeout(() => guideSay(TIPS[gSec][gIdx] + '（押すと質問できるよ）'), 500);
     guide.classList.toggle('on', show);
-  };
+  }
   addEventListener('scroll', guideVis, { passive: true });
   guideVis();
 

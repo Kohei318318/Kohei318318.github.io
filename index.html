@@ -118,7 +118,6 @@
           <img src="assets/kopeiking.webp" alt="こうぺいキングのキャラクターイラスト" width="779" height="819">
         </button>
         <p class="char-hint" id="charHint" aria-live="polite">押してみて！</p>
-        <p class="char-count" id="charCount" aria-hidden="true"></p>
       </div>
     </div>
 
@@ -380,10 +379,23 @@
   </div>
 </footer>
 
-<!-- guide character: gives a tip for each section -->
+<!-- guide character: tips per section; tap to open the Q&A chat -->
 <div class="guide" id="guide">
+  <button class="guide-btn" id="guideBtn" aria-label="こうぺいキングに質問する" aria-expanded="false" aria-controls="chat"><img src="assets/kopeiking.webp" alt="" width="64" height="67"></button>
   <p class="guide-bubble" id="guideBubble" role="status"></p>
-  <button class="guide-btn" id="guideBtn" aria-label="ガイドのこうぺいキング：押すとヒントが出ます"><img src="assets/kopeiking.webp" alt="" width="64" height="67"></button>
+</div>
+<div class="chat" id="chat" role="dialog" aria-labelledby="chatTitle" hidden>
+  <div class="chat-head">
+    <img src="assets/kopeiking.webp" alt="" width="40" height="42">
+    <div class="chat-who"><b id="chatTitle">こうぺいキング</b><span><i class="chat-online"></i>このサイトのことなら答えるよ</span></div>
+    <button class="chat-x" id="chatClose" aria-label="チャットを閉じる">✕</button>
+  </div>
+  <div class="chat-log" id="chatLog" aria-live="polite"></div>
+  <div class="chat-quick" id="chatQuick" aria-label="質問の候補"></div>
+  <form class="chat-form" id="chatForm">
+    <input id="chatInput" type="text" placeholder="質問を入力（例：JOURNEXIAって？）" autocomplete="off" aria-label="質問" maxlength="120">
+    <button type="submit" aria-label="送信"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20.5 21 12 3 3.5l2.5 8.5zM5.5 12H13"/></svg></button>
+  </form>
 </div>
 
 <script src="assets/main.js" defer></script>
